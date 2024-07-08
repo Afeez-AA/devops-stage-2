@@ -50,7 +50,6 @@ services:
       - ./backend/.env
     labels:
       - "traefik.enable=true"
-<<<<<<< HEAD
 
       # Route for production (domain-based) access
       - "traefik.http.routers.backend-production.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/api`)"
@@ -76,12 +75,6 @@ services:
       # Service definition
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
-=======
-      - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/api`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "traefik.http.routers.docs.rule=Host(`localhost`) && PathPrefix(`/docs`)"
-      - "traefik.http.routers.redoc.rule=Host(`localhost`) && PathPrefix(`/redoc`)"
->>>>>>> 2f27873c8f86ba752630bf22d2927d9f47ec1f18
     depends_on:
       - db
 
@@ -144,7 +137,6 @@ services:
       - "traefik.http.routers.adminer-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
 
       # Service definition
-=======
       - "traefik.http.routers.adminer.rule=Host(`adminer.localhost`)"  # Subdomain for Adminer
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     ports:
