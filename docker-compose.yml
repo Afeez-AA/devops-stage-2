@@ -5,42 +5,19 @@ services:
   traefik:
     image: traefik:v2.10
     command:
-      - "--api.insecure=true"  # Enable the Traefik dashboard (insecure for testing)
+      - "--api.insecure=true"   # Enable the Traefik dashboard (insecure for testing)
       - "--providers.docker=true"  # Enable Docker provider
-      - "--entrypoints.web.address=:80"  # Define the HTTP entry point
-      - "--entrypoints.websecure.address=:443"  # Define the HTTPS entry point
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"  # Redirect HTTP to HTTPS
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"  # Ensure the scheme is HTTPS
-      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"  # Use a permanent redirect (301)
-      - "--certificatesresolvers.le.acme.httpChallenge=true"  # Use HTTP-01 challenge for Let's Encrypt
-      - "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web"  # Define HTTP-01 challenge entry point
-      - "--certificatesresolvers.le.acme.email=afeezadeboyee@gmail.com"  # Your email for Let's Encrypt notifications
-      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"  # Storage for the Let's Encrypt certificates
-      - "--log.level=DEBUG"
+      - "--entrypoints.web.address=:80"  # Define the web entry point
+      # - "--entrypoints.dashboard.address=:8090"  # Define the Traefik dashboard entry point
     ports:
       - "80:80"     # Expose port 80 for HTTP
-      - "443:443"   # Expose port 443 for HTTPS
       - "8090:8080" # Expose port 8090 for Traefik dashboard under proxy.domain
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
-      - "./letsencrypt:/letsencrypt"  # Mount the directory to store Let's Encrypt certificates
     labels:
       - "traefik.enable=true"
-      # Middleware for redirecting domain without www to www
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://afeezadeboye.site/(.*)"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.afeezadeboye.site/$$1"
-      - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true" # Use permanent redirect (301)
-
-      # Traefik dashboard available under proxy domain
-      - "traefik.http.routers.api.rule=Host(`proxy.afeezadeboye.site`) && PathPrefix(`/`)"  
+      - "traefik.http.routers.api.rule=Host(`proxy.localhost`) && PathPrefix(`/`)"  # Traefik dashboard accessible at proxy.domain:8090
       - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.entrypoints=websecure"  # Make the dashboard available over HTTPS
-      - "traefik.http.routers.api.tls=true"  # Enable TLS for the dashboard
-      - "traefik.http.routers.api.tls.certresolver=le"  # Use Let's Encrypt for the dashboard
-
-      # Middleware for redirecting localhost HTTP to HTTPS (only if not running with HTTPS locally)
-      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.permanent=true"
 
   backend:
     build:
@@ -50,31 +27,10 @@ services:
       - ./backend/.env
     labels:
       - "traefik.enable=true"
-
-      # Route for production (domain-based) access
-      - "traefik.http.routers.backend-production.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-production.entrypoints=websecure"
-      - "traefik.http.routers.backend-production.tls.certresolver=le"
-
-      # Docs and Redoc
-      - "traefik.http.routers.docs.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/docs`)"
-      - "traefik.http.routers.docs.entrypoints=websecure"
-      - "traefik.http.routers.docs.tls.certresolver=le"
-
-      - "traefik.http.routers.redoc.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/redoc`)"
-      - "traefik.http.routers.redoc.entrypoints=websecure"
-      - "traefik.http.routers.redoc.tls.certresolver=le"
-
-      # Route for local development
-      - "traefik.http.routers.backend-local.rule=Host(`localhost`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-local.entrypoints=web"
-      - "traefik.http.middlewares.backend-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
-      - "traefik.http.middlewares.backend-local-redirect-to-https.redirectscheme.permanent=true"
-      - "traefik.http.routers.backend-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
-
-      # Service definition
+      - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-
+      - "traefik.http.routers.docs.rule=Host(`localhost`) && PathPrefix(`/docs`)"
+      - "traefik.http.routers.redoc.rule=Host(`localhost`) && PathPrefix(`/redoc`)"
     depends_on:
       - db
 
@@ -100,20 +56,6 @@ services:
       - ./frontend/.env 
     labels:
       - "traefik.enable=true"
-
-      # Route for production (domain-based) access
-      - "traefik.http.routers.frontend-production.rule=Host(`afeezadeboye.site`, `www.afeezadeboye.site`)"
-      - "traefik.http.routers.frontend-production.entrypoints=websecure"
-      - "traefik.http.routers.frontend-production.tls.certresolver=le"
-
-      # Route for local development
-      - "traefik.http.routers.frontend-local.rule=Host(`localhost`)"
-      - "traefik.http.routers.frontend-local.entrypoints=web"
-      - "traefik.http.middlewares.frontend-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
-      - "traefik.http.middlewares.frontend-local-redirect-to-https.redirectscheme.permanent=true"
-      - "traefik.http.routers.frontend-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
-
-      # Service definition
       - "traefik.http.routers.frontend.rule=Host(`localhost`)" # Serve frontend at the root path
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
   
@@ -122,22 +64,7 @@ services:
     container_name: adminer
     labels:
       - "traefik.enable=true"
-
-      # Route for production (domain-based) access
-      - "traefik.http.routers.adminer-production.rule=Host(`db.afeezadeboye.site`)"
-      - "traefik.http.routers.adminer-production.entrypoints=websecure"
-      - "traefik.http.routers.adminer-production.tls.certresolver=le"
-      - "traefik.http.routers.adminer.tls.certresolver=le"  # Use Let's Encrypt for adminer
-
-      # Route for local development
-      - "traefik.http.routers.adminer-local.rule=Host(`localhost`)"
-      - "traefik.http.routers.adminer-local.entrypoints=web"
-      - "traefik.http.middlewares.adminer-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
-      - "traefik.http.middlewares.adminer-local-redirect-to-https.redirectscheme.permanent=true"
-      - "traefik.http.routers.adminer-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
-
-      # Service definition
-      - "traefik.http.routers.adminer.rule=Host(`adminer.localhost`)"  # Subdomain for Adminer
+      - "traefik.http.routers.adminer.rule=Host(`db.localhost`)"  # Subdomain for Adminer
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     ports:
       - "8080:8080"
@@ -146,4 +73,3 @@ services:
 
 volumes:
   postgres_data:
-  letsencrypt: # Ensure the directory for Let's Encrypt certificates exists
