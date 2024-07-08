@@ -1,212 +1,80 @@
-# # version: '3.8'
-
-# # services:
-# #   # traefik:
-# #   #   image: traefik:v2.10
-# #   #   command:
-# #   #     - "--api.insecure=true"   # Enable the Traefik dashboard
-# #   #     - "--providers.docker=true"  # Enable Docker provider
-# #   #     - "--entrypoints.web.address=:80"  # Define the web entry point
-# #   #   ports:
-# #   #     - "80:80"     # Expose port 80 for HTTP
-# #   #     - "8090:8080" # Expose port 8080 for Traefik dashboard
-# #   #   volumes:
-# #   #     - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
-# #   #     #- "./traefik.yml:/traefik.yml"  # Traefik configuration file
-
-# #   traefik:
-# #     image: traefik:v2.10
-# #     command:
-# #       - "--api.insecure=true"   # Enable the Traefik dashboard (insecure for testing)
-# #       - "--providers.docker=true"  # Enable Docker provider
-# #       - "--entrypoints.web.address=:80"  # Define the web entry point
-# #       # - "--entrypoints.dashboard.address=:8090"  # Define the Traefik dashboard entry point
-# #     ports:
-# #       - "80:80"     # Expose port 80 for HTTP
-# #       - "8090:8080" # Expose port 8090 for Traefik dashboard under proxy.domain
-# #     volumes:
-# #       - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
-# #     labels:
-# #       - "traefik.enable=true"
-# #       - "traefik.http.routers.api.rule=Host(`proxy.54.160.24.127`) && PathPrefix(`/`)"  # Traefik dashboard accessible at proxy.domain:8090
-# #       - "traefik.http.routers.api.service=api@internal"
-
-# #   backend:
-# #     build:
-# #       context: ./backend  # Path to your FastAPI backend Dockerfile
-# #     container_name: backend
-# #     env_file:
-# #       - ./backend/.env
-# #     labels:
-# #       - "traefik.enable=true"
-# #       - "traefik.http.routers.backend.rule=Host(`54.160.24.127`) && PathPrefix(`/api`)"
-# #       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-# #       - "traefik.http.routers.docs.rule=Host(`54.160.24.127`) && PathPrefix(`/docs`)"
-# #       - "traefik.http.routers.redoc.rule=Host(`54.160.24.127`) && PathPrefix(`/redoc`)"
-# #     depends_on:
-# #       - db
-
-# #   db:
-# #     image: postgres:13
-# #     container_name: db
-# #     env_file:
-# #       - ./backend/.env
-# #     environment:
-# #       POSTGRES_DB: ${POSTGRES_DB:-app}
-# #       POSTGRES_USER: ${POSTGRES_USER:-app}
-# #       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changethis123}
-# #     volumes:
-# #       - postgres_data:/var/lib/postgresql/data
-# #     ports:
-# #       - "5432:5432"
-
-# #   frontend:
-# #     build:
-# #       context: ./frontend  # Path to your React frontend Dockerfile
-# #     container_name: frontend
-# #     env_file:
-# #       - ./frontend/.env 
-# #     labels:
-# #       - "traefik.enable=true"
-# #       - "traefik.http.routers.frontend.rule=Host(`54.160.24.127`)" # Serve frontend at the root path
-# #       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-  
-# #   adminer:
-# #     image: adminer
-# #     container_name: adminer
-# #     labels:
-# #       - "traefik.enable=true"
-# #       - "traefik.http.routers.adminer.rule=Host(`adminer.54.160.24.127`)"  # Subdomain for Adminer
-# #       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
-# #     ports:
-# #       - "8080:8080"
-# #     depends_on:
-# #       - db
-
-# # volumes:
-# #   postgres_data:
-
-# version: '3.8'
-
-# services:
-#   traefik:
-#     image: traefik:v2.10
-#     command:
-#       - "--api.insecure=true"   # Enable the Traefik dashboard (insecure for testing)
-#       - "--providers.docker=true"  # Enable Docker provider
-#       - "--entrypoints.web.address=:80"  # Define the web entry point
-#     ports:
-#       - "80:80"     # Expose port 80 for HTTP
-#       - "8090:8080" # Expose port 8090 for Traefik dashboard
-#     volumes:
-#       - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.api.rule=Host(`proxy.${HOST_IP}`) && PathPrefix(`/`)"  # Traefik dashboard accessible at proxy.domain
-#       - "traefik.http.routers.api.service=api@internal"
-
-#   backend:
-#     build:
-#       context: ./backend  # Path to your FastAPI backend Dockerfile
-#     container_name: backend
-#     env_file:
-#       - ./backend/.env
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.backend.rule=Host(`${HOST_IP}`) && PathPrefix(`/api`)"
-#       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-#       - "traefik.http.routers.docs.rule=Host(`${HOST_IP}`) && PathPrefix(`/docs`)"
-#       - "traefik.http.routers.redoc.rule=Host(`${HOST_IP}`) && PathPrefix(`/redoc`)"
-#     depends_on:
-#       - db
-
-#   db:
-#     image: postgres:13
-#     container_name: db
-#     env_file:
-#       - ./backend/.env
-#     environment:
-#       POSTGRES_DB: ${POSTGRES_DB:-app}
-#       POSTGRES_USER: ${POSTGRES_USER:-app}
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changethis123}
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     ports:
-#       - "5432:5432"
-
-#   frontend:
-#     build:
-#       context: ./frontend  # Path to your React frontend Dockerfile
-#     container_name: frontend
-#     env_file:
-#       - ./frontend/.env 
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.frontend.rule=Host(`${HOST_IP}`)" # Serve frontend at the root path
-#       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-  
-#   adminer:
-#     image: adminer
-#     container_name: adminer
-#     labels:
-#       - "traefik.enable=true"
-#       - "traefik.http.routers.adminer.rule=Host(`adminer.${HOST_IP}`)"  # Subdomain for Adminer
-#       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
-#     ports:
-#       - "8080:8080"
-#     depends_on:
-#       - db
-
-# volumes:
-#   postgres_data:
-
-
 version: '3.8'
 
 services:
+
   traefik:
     image: traefik:v2.10
     command:
-      - "--api.insecure=true" # Enable the Traefik dashboard (insecure for testing)
-      - "--providers.docker=true" # Enable Docker provider
-      - "--entrypoints.web.address=:80" # Define the web entry point for HTTP
-      #- "--entrypoints.websecure.address=:443" # Define the web entry point for HTTPS
-      #- "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true" # Use TLS challenge for HTTPS
-      #- "--certificatesresolvers.mytlschallenge.acme.email=afeezadeboyee@gmail.com" # Your email for ACME registration
-      #- "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json" # Storage for certificates
-      #- "--log.level=DEBUG" # Optional: Detailed logs for debugging
+      - "--api.insecure=true"  # Enable the Traefik dashboard (insecure for testing)
+      - "--providers.docker=true"  # Enable Docker provider
+      - "--entrypoints.web.address=:80"  # Define the HTTP entry point
+      - "--entrypoints.websecure.address=:443"  # Define the HTTPS entry point
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"  # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"  # Ensure the scheme is HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"  # Use a permanent redirect (301)
+      - "--certificatesresolvers.le.acme.httpChallenge=true"  # Use HTTP-01 challenge for Let's Encrypt
+      - "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web"  # Define HTTP-01 challenge entry point
+      - "--certificatesresolvers.le.acme.email=afeezadeboyee@gmail.com"  # Your email for Let's Encrypt notifications
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"  # Storage for the Let's Encrypt certificates
+      - "--log.level=DEBUG"
     ports:
-      - "81:80" # Expose port 80 for HTTP
-      #- "443:443" # Expose port 443 for HTTPS
-      - "8090:8080" # Expose port 8090 for Traefik dashboard
+      - "80:80"     # Expose port 80 for HTTP
+      - "443:443"   # Expose port 443 for HTTPS
+      - "8090:8080" # Expose port 8090 for Traefik dashboard under proxy.domain
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock" # Communicate with Docker
-      #- "./letsencrypt:/letsencrypt" # Store certificates
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
+      - "./letsencrypt:/letsencrypt"  # Mount the directory to store Let's Encrypt certificates
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`proxy.${HOST_IP}`) && PathPrefix(`/`)" # Traefik dashboard accessible at proxy.domain
+      # Middleware for redirecting domain without www to www
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://afeezadeboye.site/(.*)"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.afeezadeboye.site/$$1"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true" # Use permanent redirect (301)
+
+      # Traefik dashboard available under proxy domain
+      - "traefik.http.routers.api.rule=Host(`proxy.afeezadeboye.site`) && PathPrefix(`/`)"  
       - "traefik.http.routers.api.service=api@internal"
-      #- "traefik.http.routers.api.entrypoints=websecure" # Ensure dashboard uses HTTPS
-      #- "traefik.http.routers.api.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
+      - "traefik.http.routers.api.entrypoints=websecure"  # Make the dashboard available over HTTPS
+      - "traefik.http.routers.api.tls=true"  # Enable TLS for the dashboard
+      - "traefik.http.routers.api.tls.certresolver=le"  # Use Let's Encrypt for the dashboard
+
+      # Middleware for redirecting localhost HTTP to HTTPS (only if not running with HTTPS locally)
+      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.permanent=true"
 
   backend:
     build:
-      context: ./backend # Path to your FastAPI backend Dockerfile
+      context: ./backend  # Path to your FastAPI backend Dockerfile
     container_name: backend
     env_file:
       - ./backend/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+
+      # Route for production (domain-based) access
+      - "traefik.http.routers.backend-production.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-production.entrypoints=websecure"
+      - "traefik.http.routers.backend-production.tls.certresolver=le"
+
+      # Docs and Redoc
+      - "traefik.http.routers.docs.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/docs`)"
+      - "traefik.http.routers.docs.entrypoints=websecure"
+      - "traefik.http.routers.docs.tls.certresolver=le"
+
+      - "traefik.http.routers.redoc.rule=Host(`www.afeezadeboye.site`) && PathPrefix(`/redoc`)"
+      - "traefik.http.routers.redoc.entrypoints=websecure"
+      - "traefik.http.routers.redoc.tls.certresolver=le"
+
+      # Route for local development
+      - "traefik.http.routers.backend-local.rule=Host(`localhost`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-local.entrypoints=web"
+      - "traefik.http.middlewares.backend-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
+      - "traefik.http.middlewares.backend-local-redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.routers.backend-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
+
+      # Service definition
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      #- "traefik.http.routers.backend.entrypoints=websecure" # Serve backend on HTTPS
-      #- "traefik.http.routers.backend.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
-      - "traefik.http.routers.docs.rule=Host(`${DOMAIN}`) && PathPrefix(`/docs`)"
-      #- "traefik.http.routers.docs.entrypoints=websecure" # Serve docs on HTTPS
-      #- "traefik.http.routers.docs.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
-      - "traefik.http.routers.redoc.rule=Host(`${DOMAIN}`) && PathPrefix(`/redoc`)"
-      #- "traefik.http.routers.redoc.entrypoints=websecure" # Serve Redoc on HTTPS
-      #- "traefik.http.routers.redoc.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
+
     depends_on:
       - db
 
@@ -226,26 +94,49 @@ services:
 
   frontend:
     build:
-      context: ./frontend # Path to your React frontend Dockerfile
+      context: ./frontend  # Path to your React frontend Dockerfile
     container_name: frontend
     env_file:
       - ./frontend/.env 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN}`)" # Serve frontend at the root path
+
+      # Route for production (domain-based) access
+      - "traefik.http.routers.frontend-production.rule=Host(`afeezadeboye.site`, `www.afeezadeboye.site`)"
+      - "traefik.http.routers.frontend-production.entrypoints=websecure"
+      - "traefik.http.routers.frontend-production.tls.certresolver=le"
+
+      # Route for local development
+      - "traefik.http.routers.frontend-local.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend-local.entrypoints=web"
+      - "traefik.http.middlewares.frontend-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
+      - "traefik.http.middlewares.frontend-local-redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.routers.frontend-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
+
+      # Service definition
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
-      #- "traefik.http.routers.frontend.entrypoints=websecure" # Serve frontend on HTTPS
-      #- "traefik.http.routers.frontend.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
   
   adminer:
     image: adminer
     container_name: adminer
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(`adminer.${DOMAIN}`)" # Subdomain for Adminer
+
+      # Route for production (domain-based) access
+      - "traefik.http.routers.adminer-production.rule=Host(`db.afeezadeboye.site`)"
+      - "traefik.http.routers.adminer-production.entrypoints=websecure"
+      - "traefik.http.routers.adminer-production.tls.certresolver=le"
+      - "traefik.http.routers.adminer.tls.certresolver=le"  # Use Let's Encrypt for adminer
+
+      # Route for local development
+      - "traefik.http.routers.adminer-local.rule=Host(`localhost`)"
+      - "traefik.http.routers.adminer-local.entrypoints=web"
+      - "traefik.http.middlewares.adminer-local-redirect-to-https.redirectscheme.scheme=https"  # Redirect HTTP to HTTPS locally
+      - "traefik.http.middlewares.adminer-local-redirect-to-https.redirectscheme.permanent=true"
+      - "traefik.http.routers.adminer-local.middlewares=redirect-localhost-to-https@docker"  # Use the middleware for local redirection
+
+      # Service definition
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
-      #- "traefik.http.routers.adminer.entrypoints=websecure" # Serve Adminer on HTTPS
-      #- "traefik.http.routers.adminer.tls.certresolver=mytlschallenge" # Use the defined TLS resolver
     ports:
       - "8080:8080"
     depends_on:
@@ -253,3 +144,4 @@ services:
 
 volumes:
   postgres_data:
+  letsencrypt: # Ensure the directory for Let's Encrypt certificates exists
