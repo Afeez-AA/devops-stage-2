@@ -18,3 +18,37 @@ To get started with this template, please follow the instructions in the respect
 - [Frontend README](./frontend/README.md)
 - [Backend README](./backend/README.md)
 
+## STEPS
+
+## Cloning the Repository
+To get started, clone the repository:
+
+```bash
+git clone https://github.com/Afeez-AA/devops-stage-2.git
+cd devops-stage-2
+```
+
+## For Local Deployment
+To run the application locally, use the following command:
+```bash
+docker-compose -f docker-compose.yml up
+
+```
+
+## Production Deployment
+For production deployment:
+1. Rename the production Docker Compose file:
+ ```bash
+ cp docker-compose.prod.yml docker-compose.yml
+```
+2. Update docker-compose.yml with necessary details like your domain name.
+
+3. Run the application:
+```bash
+docker-compose up
+```
+*Kindly note that plan is still ongoing to make one docker compose file usable by both local and production by utilizing variables*
+
+
+
+
