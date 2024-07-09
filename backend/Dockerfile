@@ -1,11 +1,24 @@
-FROM python:3.8
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10
 
-WORKDIR /app
+WORKDIR /app/
 
-COPY pyproject.toml poetry.lock ./
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
 
-RUN pip install poetry && poetry install --no-dev
+COPY ./pyproject.toml ./poetry.lock* /app/
 
-COPY . .
+RUN poetry install --no-root --only main
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV PYTHONPATH=/app
+
+COPY ./alembic.ini /app/
+COPY ./prestart.sh /app/
+COPY ./app /app/app
+
+# Ensure prestart.sh is executable
+RUN chmod +x /app/prestart.sh
+
+# Override the CMD to run the prestart.sh script and then start Uvicorn
+CMD ["/bin/bash", "-c", "/app/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

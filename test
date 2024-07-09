@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+
+  traefik:
+    image: traefik:v2.10
+    command:
+      - "--api.insecure=true"  # Enable the Traefik dashboard (insecure for testing)
+      - "--providers.docker=true"  # Enable Docker provider
+      - "--entrypoints.web.address=:80"  # Define the HTTP entry point
+      - "--entrypoints.websecure.address=:443"  # Define the HTTPS entry point
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"  # Redirect HTTP to HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"  # Ensure the scheme is HTTPS
+      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"  # Use a permanent redirect (301)
+      - "--certificatesresolvers.le.acme.httpChallenge=true"  # Use HTTP-01 challenge for Let's Encrypt
+      - "--certificatesresolvers.le.acme.httpChallenge.entryPoint=web"  # Define HTTP-01 challenge entry point
+      - "--certificatesresolvers.le.acme.email=rajirisikaty@gmail.com"  # Your email for Let's Encrypt notifications
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"  # Storage for the Let's Encrypt certificates
+      - "--log.level=DEBUG"
+    ports:
+      - "80:80"     # Expose port 80 for HTTP
+      - "443:443"   # Expose port 443 for HTTPS
+      - "8090:8080" # Expose port 8090 for Traefik dashboard under proxy.domain
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Communicate with Docker
+      - "./letsencrypt:/letsencrypt"  # Mount the directory to store Let's Encrypt certificates
+    labels:
+      - "traefik.enable=true"
+      # Middleware for redirecting domain without www to www
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://wandexdev.shop/(.*)"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.wandexdev.shop/$$1"
+      # Traefik dashboard available under proxy domain
+      - "traefik.http.routers.api.rule=Host(`proxy.wandexdev.shop`) && PathPrefix(`/`)"  
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.entrypoints=websecure"  # Make the dashboard available over HTTPS
+      - "traefik.http.routers.api.tls=true"  # Enable TLS for the dashboard
+      - "traefik.http.routers.api.tls.certresolver=le"  # Use Let's Encrypt for the dashboard
+      # Middleware for redirecting localhost HTTP to HTTPS (only if not running with HTTPS locally)
+      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-localhost-to-https.redirectscheme.permanent=true"
+  
