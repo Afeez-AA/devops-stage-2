@@ -25,6 +25,16 @@ services:
     container_name: backend
     env_file:
       - ./backend/.env
+    environment:
+      PROJECT_NAME: "hng"
+      POSTGRES_SERVER: "db"
+      POSTGRES_USER: "app"
+      POSTGRES_PASSWORD: "changethis123"
+      POSTGRES_DB: "app"
+      DATABASE_URL: "postgres://app:changethis123@db:5432/app"
+      FIRST_SUPERUSER: "devops@hng.tech"
+      FIRST_SUPERUSER_PASSWORD: "devops#HNG11"
+      SECRET_KEY: "changethis123"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/api`)"
